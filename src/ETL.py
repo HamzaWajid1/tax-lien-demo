@@ -9,7 +9,7 @@ from sqlalchemy import create_engine, text
 excel_file = "../tax-lien-demo/data/delinquent_taxes.xlsx"
 
 # PostgreSQL connection string
-DATABASE_URL = "postgresql://postgres:Hamza.paracha1@localhost:5432/tax_lien_demo"
+DATABASE_URL = "postgresql://postgres:password@localhost:5432/tax_lien_demo"
 
 # -------------------------------
 # STEP 1: LOAD EXCEL
