@@ -1,135 +1,283 @@
-project:
-  name: "Tax Lien Data Engineering Demo – Florida"
-  role: "Motate – Data Engineer Intern (48-Hour Challenge)"
-  author: "Hamza Paracha"
-overview:
-  description: |
-    This project is a 48-hour demo submission for the Data Engineer Intern role at Motate.
-    It showcases the ability to design a scalable database schema, build a Python-based web scraping pipeline,
-    clean and standardize semi-structured public data, organize a mini ETL pipeline, and present end-to-end engineering work.
-  selected_state: "Florida"
-  reason: "Structured and publicly accessible tax lien certificate data for demonstration purposes."
-architecture:
-  repo_structure:
-    tax-lien-demo/:
-      src/:
-        - scraper.py: "Fetches & parses HTML pages"
-        - parser.py: "Data cleaning/standardization functions"
-        - db.py: "Database connection (PostgreSQL + SQLAlchemy)"
-        - main.py: "Orchestrates the full pipeline"
-      - schema.sql: "Full normalized schema"
-      - README.md: "Documentation"
-database_schema:
-  type: "PostgreSQL"
-  tables:
-    properties:
-      columns:
-        - property_id: "SERIAL PRIMARY KEY"
-        - parcel_number: "VARCHAR(50) UNIQUE"
-        - address: "TEXT"
-        - city: "VARCHAR(100)"
-        - county: "VARCHAR(100)"
-        - state: "VARCHAR(20)"
-        - zip_code: "VARCHAR(20)"
-        - land_use: "VARCHAR(100)"
-        - assessed_value: "NUMERIC"
-        - latitude: "FLOAT"
-        - longitude: "FLOAT"
-    owners:
-      columns:
-        - owner_id: "SERIAL PRIMARY KEY"
-        - owner_name: "VARCHAR(200)"
-        - mailing_address: "TEXT"
-        - city: "VARCHAR(100)"
-        - state: "VARCHAR(20)"
-        - zip_code: "VARCHAR(20)"
-    tax_liens:
-      columns:
-        - lien_id: "SERIAL PRIMARY KEY"
-        - property_id: "INT REFERENCES properties(property_id)"
-        - owner_id: "INT REFERENCES owners(owner_id)"
-        - certificate_number: "VARCHAR(50)"
-        - tax_year: "INT"
-        - face_amount: "NUMERIC"
-        - interest_rate: "FLOAT"
-        - status: "VARCHAR(20)"
-        - issue_date: "DATE"
-        - redeem_by_date: "DATE"
-    auctions:
-      columns:
-        - auction_id: "SERIAL PRIMARY KEY"
-        - lien_id: "INT REFERENCES tax_liens(lien_id)"
-        - auction_date: "DATE"
-        - opening_bid: "NUMERIC"
-        - winning_bid: "NUMERIC"
-        - winning_bidder: "VARCHAR(200)"
-    payments:
-      columns:
-        - payment_id: "SERIAL PRIMARY KEY"
-        - lien_id: "INT REFERENCES tax_liens(lien_id)"
-        - payment_date: "DATE"
-        - amount_paid: "NUMERIC"
-        - payment_method: "VARCHAR(50)"
-        - transaction_id: "VARCHAR(100)"
-etl_pipeline:
-  extract:
-    description: "Load tax lien listing pages and extract certificate info, parcel numbers, face amount, interest rate, owner names, etc."
-    libraries: ["requests", "BeautifulSoup"]
-    features: ["Handles pagination", "Fetch multiple pages"]
-  transform:
-    description: "Standardize and clean extracted fields"
-    actions:
-      - currency_to_float
-      - percentage_to_decimal
-      - dates_to_ISO
-      - deduplicate_by: ["parcel_number", "tax_year"]
-  load:
-    description: "Load cleaned data into PostgreSQL using SQLAlchemy"
-    features: ["Foreign key relationships", "Modular design for production"]
-tech_stack:
-  language: "Python 3.10"
-  web_scraping: ["requests", "BeautifulSoup"]
-  database: "PostgreSQL 14"
-  orm: "SQLAlchemy"
-  data_cleaning: "Custom Python utilities"
-  tools: ["Git", "VS Code", "ChatGPT (boilerplate assistance)"]
-setup_instructions:
-  clone_repo: |
-    git clone https://github.com/<your-username>/tax-lien-demo.git
-    cd tax-lien-demo
-  install_dependencies: "pip install -r requirements.txt"
-  postgresql_setup:
-    create_db: "CREATE DATABASE tax_lien_demo;"
-    update_credentials: "Update DATABASE_URL in db.py if necessary"
-  apply_schema: "psql -d tax_lien_demo -f schema.sql"
-  run_pipeline: "python src/main.py"
-sample_output:
-  example_record:
-    certificate_number: "12345"
-    parcel_number: "02-4003-345-0010"
-    tax_year: 2023
-    face_amount: 450.12
-    interest_rate: 0.18
-    status: "OPEN"
-ai_assistance:
-  description: "ChatGPT was used to accelerate repo structure planning, boilerplate code, README formatting, and video demo script."
-  manual_work: "All architectural decisions, data modeling, debugging, and pipeline integration were done manually."
-time_invested: "Approximately 7 hours across 48 hours"
-video_demo:
-  duration: "3-5 minutes"
-  link: "Add your Loom/YouTube link here"
-  contents:
-    - "Schema design explanation"
-    - "Pipeline architecture"
-    - "Code walkthrough"
-    - "Output results"
-future_improvements:
-  - "Add Airflow for scheduling"
-  - "Add retry logic and rotating proxies"
-  - "Create analytics dashboards (Metabase/Looker)"
-  - "Add county-level ingest modularization"
-  - "Add Docker containerization"
-contact:
-  name: "Hamza Paracha"
-  email: "hamzaparacha098@gmail.com"
-  linkedin: "Add your LinkedIn link"
+# 🏛️ Tax Lien Data Engineering Demo – Florida
+
+<div align="center">
+
+**A 48-Hour Challenge Submission for Data Engineer Intern Role at Motate**
+
+*Built by [Hamza Paracha](mailto:hamzaparacha098@gmail.com)*
+
+[![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14-blue.svg)](https://www.postgresql.org/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-green.svg)](https://www.sqlalchemy.org/)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Database Schema](#-database-schema)
+- [ETL Pipeline](#-etl-pipeline)
+- [Tech Stack](#-tech-stack)
+- [Setup Instructions](#-setup-instructions)
+- [Sample Output](#-sample-output)
+- [Future Improvements](#-future-improvements)
+- [Contact](#-contact)
+
+---
+
+## 🎯 Overview
+
+This project is a **48-hour demo submission** for the Data Engineer Intern role at Motate. It showcases the ability to:
+
+- ✅ Design a scalable database schema
+- ✅ Build a Python-based web scraping pipeline
+- ✅ Clean and standardize semi-structured public data
+- ✅ Organize a mini ETL pipeline
+- ✅ Present end-to-end engineering work
+
+### Selected State: **Florida**
+
+Structured and publicly accessible tax lien certificate data for demonstration purposes.
+
+---
+
+## 🏗️ Architecture
+
+### Repository Structure
+
+```
+tax-lien-demo/
+├── src/
+│   ├── scraper.py      # Fetches & parses HTML pages
+│   ├── parser.py       # Data cleaning/standardization functions
+│   ├── db.py           # Database connection (PostgreSQL + SQLAlchemy)
+│   └── main.py         # Orchestrates the full pipeline
+├── schema.sql          # Full normalized schema
+└── README.md           # Documentation
+```
+
+---
+
+## 🗄️ Database Schema
+
+**Database Type:** PostgreSQL
+
+### Tables Overview
+
+#### 1. **Properties**
+Stores property information with geospatial data.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `property_id` | SERIAL PRIMARY KEY | Unique property identifier |
+| `parcel_number` | VARCHAR(50) UNIQUE | Parcel identification number |
+| `address` | TEXT | Property street address |
+| `city` | VARCHAR(100) | City name |
+| `county` | VARCHAR(100) | County name |
+| `state` | VARCHAR(20) | State abbreviation |
+| `zip_code` | VARCHAR(20) | ZIP code |
+| `land_use` | VARCHAR(100) | Land use classification |
+| `assessed_value` | NUMERIC | Property assessed value |
+| `latitude` | FLOAT | Geographic latitude |
+| `longitude` | FLOAT | Geographic longitude |
+
+#### 2. **Owners**
+Stores property owner information.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `owner_id` | SERIAL PRIMARY KEY | Unique owner identifier |
+| `owner_name` | VARCHAR(200) | Owner full name |
+| `mailing_address` | TEXT | Mailing address |
+| `city` | VARCHAR(100) | City name |
+| `state` | VARCHAR(20) | State abbreviation |
+| `zip_code` | VARCHAR(20) | ZIP code |
+
+#### 3. **Tax Liens**
+Core table storing tax lien certificate information.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `lien_id` | SERIAL PRIMARY KEY | Unique lien identifier |
+| `property_id` | INT | Foreign key → `properties(property_id)` |
+| `owner_id` | INT | Foreign key → `owners(owner_id)` |
+| `certificate_number` | VARCHAR(50) | Tax lien certificate number |
+| `tax_year` | INT | Year of tax assessment |
+| `face_amount` | NUMERIC | Original tax amount |
+| `interest_rate` | FLOAT | Interest rate (decimal) |
+| `status` | VARCHAR(20) | Lien status (e.g., OPEN, REDEEMED) |
+| `issue_date` | DATE | Date lien was issued |
+| `redeem_by_date` | DATE | Redemption deadline |
+
+#### 4. **Auctions**
+Tracks auction information for tax liens.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `auction_id` | SERIAL PRIMARY KEY | Unique auction identifier |
+| `lien_id` | INT | Foreign key → `tax_liens(lien_id)` |
+| `auction_date` | DATE | Date of auction |
+| `opening_bid` | NUMERIC | Initial bid amount |
+| `winning_bid` | NUMERIC | Final winning bid amount |
+| `winning_bidder` | VARCHAR(200) | Name of winning bidder |
+
+#### 5. **Payments**
+Records payment transactions for tax liens.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `payment_id` | SERIAL PRIMARY KEY | Unique payment identifier |
+| `lien_id` | INT | Foreign key → `tax_liens(lien_id)` |
+| `payment_date` | DATE | Date of payment |
+| `amount_paid` | NUMERIC | Payment amount |
+| `payment_method` | VARCHAR(50) | Payment method used |
+| `transaction_id` | VARCHAR(100) | Transaction identifier |
+
+---
+
+## 🔄 ETL Pipeline
+
+### Extract
+- **Description:** Load tax lien listing pages and extract certificate info, parcel numbers, face amount, interest rate, owner names, etc.
+- **Libraries:** `requests`, `BeautifulSoup`
+- **Features:**
+  - ✅ Handles pagination
+  - ✅ Fetches multiple pages
+
+### Transform
+- **Description:** Standardize and clean extracted fields
+- **Actions:**
+  - 🔄 Currency to float conversion
+  - 🔄 Percentage to decimal conversion
+  - 🔄 Dates to ISO format
+  - 🔄 Deduplication by `parcel_number` and `tax_year`
+
+### Load
+- **Description:** Load cleaned data into PostgreSQL using SQLAlchemy
+- **Features:**
+  - ✅ Foreign key relationships
+  - ✅ Modular design for production
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|----------|-----------|
+| **Language** | Python 3.10 |
+| **Web Scraping** | `requests`, `BeautifulSoup` |
+| **Database** | PostgreSQL 14 |
+| **ORM** | SQLAlchemy |
+| **Data Cleaning** | Custom Python utilities |
+| **Tools** | Git, VS Code, ChatGPT (boilerplate assistance) |
+
+---
+
+## 🚀 Setup Instructions
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/<your-username>/tax-lien-demo.git
+cd tax-lien-demo
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. PostgreSQL Setup
+
+```sql
+CREATE DATABASE tax_lien_demo;
+```
+
+Update `DATABASE_URL` in `db.py` if necessary.
+
+### 4. Apply Schema
+
+```bash
+psql -d tax_lien_demo -f schema.sql
+```
+
+### 5. Run Pipeline
+
+```bash
+python src/main.py
+```
+
+---
+
+## 📊 Sample Output
+
+### Example Record
+
+```json
+{
+  "certificate_number": "12345",
+  "parcel_number": "02-4003-345-0010",
+  "tax_year": 2023,
+  "face_amount": 450.12,
+  "interest_rate": 0.18,
+  "status": "OPEN"
+}
+```
+
+---
+
+## 🎥 Video Demo
+
+**Duration:** 3-5 minutes  
+**Link:** *Add your Loom/YouTube link here*
+
+**Contents:**
+- 📐 Schema design explanation
+- 🏗️ Pipeline architecture
+- 💻 Code walkthrough
+- 📈 Output results
+
+---
+
+## 🔮 Future Improvements
+
+- [ ] Add Airflow for scheduling
+- [ ] Add retry logic and rotating proxies
+- [ ] Create analytics dashboards (Metabase/Looker)
+- [ ] Add county-level ingest modularization
+- [ ] Add Docker containerization
+
+---
+
+## 📝 AI Assistance Note
+
+ChatGPT was used to accelerate:
+- Repo structure planning
+- Boilerplate code
+- README formatting
+- Video demo script
+
+**All architectural decisions, data modeling, debugging, and pipeline integration were done manually.**
+
+**Time Invested:** Approximately 7 hours across 48 hours
+
+---
+
+## 📧 Contact
+
+**Hamza Paracha**
+
+- 📧 Email: [hamzaparacha098@gmail.com](mailto:hamzaparacha098@gmail.com)
+- 💼 LinkedIn: *Add your LinkedIn link*
+
+---
+
+<div align="center">
+
+**Made with ❤️ for Motate Data Engineer Intern Challenge**
+
+</div>
