@@ -328,7 +328,7 @@ LIMIT 10;
 **Hamza Paracha**
 
 - 📧 Email: [hamzaparacha098@gmail.com](mailto:hamzaparacha098@gmail.com)
-- 💼 LinkedIn: *Add your LinkedIn link*
+- 💼 LinkedIn: https://www.linkedin.com/in/hamza-wajid-paracha-60b6b2247/
 
 ---
 
