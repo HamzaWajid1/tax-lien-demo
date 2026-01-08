@@ -178,13 +178,41 @@ git clone https://github.com/<your-username>/tax-lien-demo.git
 cd tax-lien-demo/tax-lien-demo
 ```
 
-### 2. Install Dependencies
+### 2. Create Virtual Environment
+
+It's recommended to use a virtual environment to isolate project dependencies.
+
+**On Windows (PowerShell):**
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+**On Windows (Command Prompt):**
+```cmd
+python -m venv venv
+venv\Scripts\activate.bat
+```
+
+**On Linux/Mac:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+You should see `(venv)` in your terminal prompt when the virtual environment is active.
+
+### 3. Install Dependencies
+
+With the virtual environment activated, install the required packages:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. PostgreSQL Setup
+**Note**: Keep the virtual environment activated for all subsequent steps. To deactivate it later, simply run `deactivate` in your terminal.
+
+### 4. PostgreSQL Setup
 
 Create the database:
 
@@ -192,7 +220,7 @@ Create the database:
 CREATE DATABASE tax_lien_demo;
 ```
 
-### 4. Configure Database Connection
+### 5. Configure Database Connection
 
 Update the `DATABASE_URL` in `src/ETL.py` with your PostgreSQL credentials:
 
@@ -202,7 +230,7 @@ DATABASE_URL = "postgresql://username:password@localhost:5432/tax_lien_demo"
 
 **Note**: If your password contains special characters, they should be URL-encoded.
 
-### 5. Download Source Data (Optional)
+### 6. Download Source Data (Optional)
 
 If you need to download the Excel file:
 
@@ -212,7 +240,7 @@ python src/scraper.py
 
 This will download the Excel file to `data/delinquent_taxes.xlsx`.
 
-### 6. Run ETL Pipeline
+### 7. Run ETL Pipeline
 
 ```bash
 python src/ETL.py
